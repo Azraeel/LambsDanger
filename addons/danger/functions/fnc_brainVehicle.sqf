@@ -123,9 +123,13 @@ if (_armored && {!isNull _dangerCausedBy}) exitWith {
     // vehicle jink
     private _oldDamage = _vehicle getVariable [QGVAR(vehicleDamage), 0];
     if (_vehicle distance _dangerCausedBy < (12 + random 15) || {damage _vehicle > _oldDamage}) exitWith {
-        _vehicle setVariable [QGVAR(vehicleDamage), damage _vehicle];
-        _vehicle doWatch _dangerCausedBy;
-        [_unit] call EFUNC(main,doVehicleJink);
+        if (!{damage _unit > 0.5} && !{damage player > 0.5}) then {
+            [_unit] call EFUNC(main,doVehicleJink);
+        };
+
+        [_timeout + 1] + [0,1,2] call CBA_fnc_waitAndExecute;
+
+        // timeout after jinking and/or firing a weapon to prevent the AI from doing nothing for too long when it's stuck in a corner or something similar. This also prevents the AI from getting stuck in an infinite loop of jinking and firing.
         [_timeout + _delay] + _causeArray
     };
 
@@ -141,6 +145,9 @@ if (_armored && {!isNull _dangerCausedBy}) exitWith {
                 [_unit, _dangerPos, _dangerCausedBy],
                 _delay - 2
             ] call CBA_fnc_waitAndExecute;
+
+            // timeout after attacking to prevent the AI from doing nothing for too long when it's stuck in a corner or something similar. This also prevents the AI from getting stuck in an infinite loop of attacking.  The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.
+            [_timeout + 1] + _causeArray
         };
     };
 
@@ -151,11 +158,16 @@ if (_armored && {!isNull _dangerCausedBy}) exitWith {
             _x setUnitPosWeak "MIDDLE";
             _x doWatch _dangerCausedBy;
             _x doTarget _dangerCausedBy;
-            _x doFire _dangerCausedBy;
+            if (!{damage player > 0.5} && !{damage player > 0.5}) then {  // prevent the AI from getting stuck in an infinite loop of firing at a target that's already dead or something similar. This also prevents the AI from getting stuck in an infinite loop of supporting units that are all dead or something similar. The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.  The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.
+                _x doFire _dangerCausedBy;
+            };
         } foreach _units;
+
+        // timeout after supporting units to prevent the AI from doing nothing for too long when it's stuck in a corner or something similar. This also prevents the AI from getting stuck in an infinite loop of supporting units that are all dead or something similar. The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.  The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.
+        [_timeout + 1] + _causeArray
     };
 
-    // timeout
+    // timeout after jinking and/or firing a weapon to prevent the AI from doing nothing for too long when it's stuck in a corner or something similar. This also prevents the AI from getting stuck in an infinite loop of jinking and firing.  The timeout is set to 1 second because the unit might have been killed by another unit while it was attacking. If that happens we don't want the AI to just sit there and do nothing.
     [_timeout + _delay] + _causeArray
 };
 
