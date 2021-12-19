@@ -185,6 +185,8 @@ if (_car) exitWith {
     // escape
     if (_slow && {_vehicle distance _dangerCausedBy < (15 + random 35)}) then {
         [_unit] call EFUNC(main,doVehicleJink);
+        [{[0.5, 1.5]} + random 2] call EFUNC(main,doVehicleJink);  // jink left or right for a while and back to original direction after that. This will make the vehicle more unpredictable and harder to hit. 
+        [{[-1, -0.5]} + random 2] call EFUNC(main,doVehicleJink); // jink left or right for a while and back to original direction after that. This will make the vehicle more unpredictable and harder to hit. 
         _slow = false;
         _delay = 3;
     };
