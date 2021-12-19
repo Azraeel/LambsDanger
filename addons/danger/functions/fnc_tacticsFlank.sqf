@@ -70,11 +70,9 @@ _pos pushBack _target;
 // find overwatch position
 if (_overwatch isEqualTo []) then {
     private _distance2D = ((_unit distance2D _target) * 0.66) min 250;
-    _overwatch = selectBestPlaces [_target, _distance2D, "(2 * hills) + (2 * forest + trees + houses) - (2 * meadow) - (2 * windy) - (2 * sea) - (10 * deadBody)", 100 , 3] apply {[(_x select 0) distance2D _unit, _x select 0]};
-    _overwatch = _overwatch select {!(surfaceIsWater (_x select 1))};
-    _overwatch sort true;
-    _overwatch = _overwatch apply {_x select 1};
+    _overwatch = selectBestPlaces [_target, _distance2D, "(2 * hills) + (2 * forest + trees + houses) - (2 * meadow) - (2 * windy) - (10 * deadBody)", 100 , 3] apply {[(_x select 0) distance2D _unit, _x select 0]};
     if (_overwatch isEqualTo []) then {_overwatch pushBack ([getPos _unit, _distance2D, 100, 8, _target] call EFUNC(main,findOverwatch));};
+    if (_overwatch isEqualTo []) then {_overwatch pushBack ([getPos _unit,-1000000000,-1000000000,-1000000000,-1000000000] call EFUNC(main,findOverwatch));}; // If no place found for overwatch try to find a place where the unit can move to. This will be used when the unit has been ordered to move to a position where it can't shoot.
     _overwatch = _overwatch select 0;
 };
 
