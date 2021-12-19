@@ -67,7 +67,7 @@ private _vehicles = [_unit] call EFUNC(main,findReadyVehicles);
 private _pos = [_target, 12, true, false] call EFUNC(main,findBuildings);
 _pos pushBack _target;
 
-// find ammo if needed
+// find overwatch position
 if (_unit isKindOf "Man") then { // If the unit is a man, check if he has any ammo left. If not, find a place where he can refill his ammo. This will be used when the unit has been ordered to move to a position where it can't refill its ammo.
     private _ammo = getMagazineAmmoCount [_unit]; // Get the amount of ammo in the magazine of this unit.
     if (_ammo <= 0) then { // If there's no ammo left in this magazine, find a place where we can refill our magazines and go there. 
@@ -78,15 +78,6 @@ if (_unit isKindOf "Man") then { // If the unit is a man, check if he has any am
         _place = _place select 0; // Select the first place from the list of places where we can refill our magazines.
         if (_place isEqualTo []) then {_overwatch pushBack ([getPos _unit, -1000000000,-1000000000,-1000000000,-1000000000] call EFUNC(main,findOverwatch));}; // If no place found for overwatch try to find a place where the unit can move to. This will be used when the unit has been ordered to move to a position where it can't shoot.
     };
-};
-
-// find overwatch position
-if (_overwatch isEqualTo []) then {
-    private _distance2D = ((_unit distance2D _target) * 0.66) min 250;
-    _overwatch = selectBestPlaces [_target, _distance2D, "(2 * hills) + (2 * forest + trees + houses) - (2 * meadow) - (2 * windy) - (10 * deadBody)", 100 , 3] apply {[(_x select 0) distance2D _unit, _x select 0]};
-    if (_overwatch isEqualTo []) then {_overwatch pushBack ([getPos _unit, _distance2D, 100, 8, _target] call EFUNC(main,findOverwatch));};
-    if (_overwatch isEqualTo []) then {_overwatch pushBack ([getPos _unit,-1000000000,-1000000000,-1000000000,-1000000000] call EFUNC(main,findOverwatch));}; // If no place found for overwatch try to find a place where the unit can move to. This will be used when the unit has been ordered to move to a position where it can't shoot.
-    _overwatch = _overwatch select 0;
 };
 
 // set tasks
