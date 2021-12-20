@@ -64,7 +64,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
     // vehicle response
     private _tankTarget = _enemies findIf {
         _unit distance2D _x < RANGE_THREAT && {(vehicle _x) isKindOf "Tank"} && {!(terrainIntersectASL [_eyePos, (eyePos _x) vectorAdd [0, 0, 5]])} };
-    if (_tankTarget != -1 && {!GVAR(disableAIHideFromTanksAndAircraft)} && {!_speedMode}) exitWith {  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
+    if (_tankTarget != -1 && {!GVAR(disableAIHideFromTanksAndAircraft)} && {!_speedMode}) exitWith { 
         private _enemyVehicle = _enemies select _tankTarget;
         _plan pushBack TACTICS_HIDE;
         _pos = _unit getHideFrom (_enemyVehicle);
@@ -72,7 +72,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         // anti-vehicle callout
         private _nameSoundConfig = configOf (_enemyVehicle) >> "nameSound";
         private _callout = if (isText (_nameSoundConfig)) then { getText (_nameSoundConfig) } else { "KeepFocused" };
-        [_unit, behaviour (_unit), _callout] call EFUNC(main,doCallout);  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
+        [_unit, behaviour (_unit), _callout] call EFUNC(main,doCallout);  
     };
 
     // anti-infantry tactics
@@ -96,7 +96,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         _unit distance2D (_x) < RANGE_NEAR && {_inside || (_x call EFUNC(main,isIndoor))}};
     if (_nearIndoorTarget != -1) exitWith {
         _plan append [TACTICS_GARRISON, TACTICS_ASSAULT, TACTICS_ASSAULT];
-        _pos = getPosATL (_enemies select _nearIndoorTarget);  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
+        _pos = getPosATL (_enemies select _nearIndoorTarget); 
     };
 
     // inside? stay safe
@@ -110,28 +110,22 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         && {((getPosASL _x) select 2) > ((_eyePos select 2) + 15)}
         && {!(terrainIntersectASL [_eyePos vectorAdd [0, 0, 5], eyePos _x])}
     };
-    if (_farHighertarget != -1) exitWith {
-        _plan append [TACTICS_SUPPRESS, TACTICS_HIDE, TACTICS_HIDE];
-        _pos = _unit getHideFrom (_enemies select _farHighertarget);
-    };
 
-    // enemies near and below
-    private _farNoCoverTarget = _enemies findIf {
-        _unit distance2D _x < RANGE_MID
-        && {((getPosASL _x) select 2) < ((_eyePos select 2) - 15)}
-    };
-    if (_farNoCoverTarget != -1) exitWith {
-        // trust in default attack routines!
-        _plan pushBack TACTICS_ATTACK;
-        _pos = _enemies select _farNoCoverTarget;
-    };
-
-    // enemy at inside buildings or fortified or far
+    // enemy at inside buildings or fortified or far (with smoke grenade!) 
     private _fortifiedTarget = _enemies findIf {
         _unit distance2D _x > RANGE_LONG
         || {_x call EFUNC(main,isIndoor)}
         || {(nearestObjects [_x, ["Strategic", "StaticWeapon"], 2, true]) isNotEqualTo []}
     };
+
+    // enemy at inside buildings or fortified or far (with smoke grenade!) 
+    if (_farHighertarget != -1) exitWith {
+        // trust in default attack routines!
+        _plan append [TACTICS_SUPPRESS, TACTICS_HIDE, TACTICS_HIDE];
+        _pos = _unit getHideFrom (_enemies select _farHighertarget);
+
+    };
+
     if (_fortifiedTarget != -1) exitWith {
 
         // basic plan
@@ -142,7 +136,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         private _combatMode = combatMode _unit;
         if (_combatMode isEqualTo "RED") then {_plan pushBack TACTICS_ASSAULT;};
         if (_combatMode isEqualTo "YELLOW") then {_plan pushBack TACTICS_SUPPRESS;};
-        if (_speedMode) then {
+         if (_speedMode) then {  // speed mode: assault and flank! (no suppress!) 
             _plan = _plan - [TACTICS_SUPPRESS];
             _plan pushBack TACTICS_ASSAULT;
         };
@@ -152,8 +146,9 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         if (_unit distance2D _pos < RANGE_MID) then {_plan pushBack TACTICS_ASSAULT;};
         if ((nearestTerrainObjects [ _unit, ["BUSH", "TREE", "HOUSE", "HIDE"], 4, false, true ]) isEqualTo []) then {_plan pushBack TACTICS_FLANK;};
 
-        // conceal movement
+        // conceal movement (with smoke grenade!) !!! not working yet !!! (needs to be improved with ai.sqf functions!) !!! not working yet !!! (needs to be improved with ai.sqf functions!) !!! not working yet !!! (needs to be improved with ai.sqf functions!)
         if (!GVAR(disableAutonomousSmokeGrenades) && {(getSuppression _unit) isNotEqualTo 0}) then {[_unit, _pos] call EFUNC(main,doSmoke);};
+
     };
 };
 
