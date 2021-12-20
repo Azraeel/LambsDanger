@@ -70,8 +70,18 @@ if (
     && {RND(getSuppression _unit)}
     && {_type isEqualTo DANGER_CANFIRE || {RND(0.6) && {_type isEqualTo DANGER_ENEMYDETECTED}}}
 ) exitWith {
-    [_unit, ATLtoASL ((_unit getHideFrom _target) vectorAdd [0, 0, 0.8]), true] call EFUNC(main,doSuppress);
-    _timeout + 4
+
+    if (_timeout > 4)  // If the timeout is greater than 4 seconds then we can assume that the AI has suppressed successfully and we can move on to the next target.  Otherwise we will continue suppressing until it succeeds or times out.  
+
+        [_unit, ATLtoASL ((_unit getHideFrom _target) vectorAdd [0, 0, 0.8]), true] call EFUNC(main,doSuppress);
+
+        exitWith {} // Exit with an empty block so that nothing happens after this function finishes executing.  
+
+    else  // If the suppression fails then we need to try again with a new target and reset our timeout counter.  
+
+        [_unit, ATLtoASL ((_unit getHideFrom _target) vectorAdd [0, 0, 0.8]), true] call EFUNC(main,doSuppress);
+
+        _timeout + 4; // Add 4 seconds to the timeout counter.  
 };
 
 // end
