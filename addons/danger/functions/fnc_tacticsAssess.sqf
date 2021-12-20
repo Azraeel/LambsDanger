@@ -111,7 +111,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         && {!(terrainIntersectASL [_eyePos vectorAdd [0, 0, 5], eyePos _x])}
     };
 
-    // enemy at inside buildings or fortified or far (with smoke grenade!) 
+    // enemy at inside buildings or fortified or far 
     private _fortifiedTarget = _enemies findIf {
         _unit distance2D _x > RANGE_LONG
         || {_x call EFUNC(main,isIndoor)}
@@ -146,7 +146,7 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         if (_unit distance2D _pos < RANGE_MID) then {_plan pushBack TACTICS_ASSAULT;};
         if ((nearestTerrainObjects [ _unit, ["BUSH", "TREE", "HOUSE", "HIDE"], 4, false, true ]) isEqualTo []) then {_plan pushBack TACTICS_FLANK;};
 
-        // conceal movement (with smoke grenade!) !!! not working yet !!! (needs to be improved with ai.sqf functions!) !!! not working yet !!! (needs to be improved with ai.sqf functions!) !!! not working yet !!! (needs to be improved with ai.sqf functions!)
+        // conceal movement (with smoke grenade!) 
         if (!GVAR(disableAutonomousSmokeGrenades) && {(getSuppression _unit) isNotEqualTo 0}) then {[_unit, _pos] call EFUNC(main,doSmoke);};
 
     };
