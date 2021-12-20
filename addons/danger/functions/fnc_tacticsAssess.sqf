@@ -53,8 +53,8 @@ private _plan = [];
 // sort plans
 _pos = [];
 if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
-
-    // get modes
+    
+    // get nodes
     private _speedMode = (speedMode _unit) isEqualTo "FULL";
     private _eyePos = eyePos _unit;
 
@@ -63,52 +63,40 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
 
     // vehicle response
     private _tankTarget = _enemies findIf {
-        _unit distance2D _x < RANGE_THREAT
-        && {(vehicle _x) isKindOf "Tank"}
-        && {!(terrainIntersectASL [_eyePos, (eyePos _x) vectorAdd [0, 0, 5]])}
-    };
-    if (_tankTarget != -1 && {!GVAR(disableAIHideFromTanksAndAircraft)} && {!_speedMode}) exitWith {
+        _unit distance2D _x < RANGE_THREAT && {(vehicle _x) isKindOf "Tank"} && {!(terrainIntersectASL [_eyePos, (eyePos _x) vectorAdd [0, 0, 5]])} };
+    if (_tankTarget != -1 && {!GVAR(disableAIHideFromTanksAndAircraft)} && {!_speedMode}) exitWith {  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
         private _enemyVehicle = _enemies select _tankTarget;
         _plan pushBack TACTICS_HIDE;
-        _pos = _unit getHideFrom _enemyVehicle;
+        _pos = _unit getHideFrom (_enemyVehicle);
 
         // anti-vehicle callout
-        private _nameSoundConfig = configOf _enemyVehicle >> "nameSound";
-        private _callout = if (isText _nameSoundConfig) then { getText _nameSoundConfig } else { "KeepFocused" };
-        [_unit, behaviour _unit, _callout] call EFUNC(main,doCallout);
+        private _nameSoundConfig = configOf (_enemyVehicle) >> "nameSound";
+        private _callout = if (isText (_nameSoundConfig)) then { getText (_nameSoundConfig) } else { "KeepFocused" };
+        [_unit, behaviour (_unit), _callout] call EFUNC(main,doCallout);  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
     };
 
     // anti-infantry tactics
-    _enemies = _enemies select {isNull objectParent _x};
+    private _enemies = ((_enemies selectIf {!(_x isKindOf "Infantry")}) selectIf {!(_x isKindOf "Paratrooper")});
 
     // Check for artillery ~ NB: support is far quicker now! and only targets infantry
-    if (EGVAR(main,Loaded_WP) && {[side _unit] call EFUNC(WP,sideHasArtillery)}) then {
+    if (GVAR(main,Loaded_WP) && {[side _unit] call EFUNC(WP,sideHasArtillery)}) then {
         private _artilleryTarget = _enemies findIf {
-            _unit distance2D _x > RANGE_MID
-            && {([_unit, getPos _x, RANGE_NEAR] call EFUNC(main,findNearbyFriendlies)) isEqualTo []}
-        };
+            _unit distance2D _x > RANGE_MID && {([_unit, getPos (_x), RANGE_NEAR] call EFUNC(main,findNearbyFriendlies)) isEqualTo []} };
         if (_artilleryTarget != -1) then {
             [_unit, _unit getHideFrom (_enemies select _artilleryTarget)] call EFUNC(main,doCallArtillery);   // possibly add delay? ~ nkenny
         };
     };
 
     // no manoeuvres or no weapons -- exit
-    if (
-        GVAR(disableAIAutonomousManoeuvres)
-        || {weapons _unit isEqualTo []}
-        || {!(_unit checkAIFeature "PATH")}
-        || {!(_unit checkAIFeature "MOVE")}
-    ) exitWith {_plan = [];};
+    if (GVAR(disableAIAutonomousManoeuvres) || ({weapons _unit} isEqualTo []) || ({!(_unit checkAIFeature "PATH")} || {!(_unit checkAIFeature "MOVE")}) ) exitWith {_plan = [];};
 
     // enemies within X meters of leader and either attacker or unit is inside buildings
     private _inside = _unit call EFUNC(main,isIndoor);
     private _nearIndoorTarget = _enemies findIf {
-        _unit distance2D _x < RANGE_NEAR
-        && {_inside || {_x call EFUNC(main,isIndoor)}}
-    };
+        _unit distance2D (_x) < RANGE_NEAR && {_inside || (_x call EFUNC(main,isIndoor))}};
     if (_nearIndoorTarget != -1) exitWith {
         _plan append [TACTICS_GARRISON, TACTICS_ASSAULT, TACTICS_ASSAULT];
-        _pos = getPosATL (_enemies select _nearIndoorTarget);
+        _pos = getPosATL (_enemies select _nearIndoorTarget);  // NB: this may be redundant with the above? ~ nkenny  -- no it's not. ~ dave.nkenny@gmail.com  -- I think it's a good idea to have both. ~ nkenny
     };
 
     // inside? stay safe
