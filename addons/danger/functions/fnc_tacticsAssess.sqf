@@ -160,6 +160,20 @@ if !(_enemies isEqualTo [] || {_unitCount < random 3}) then {
         if (!terrainIntersectASL [eyePos(_unit), eyePos(_enemies select _farHighertarget)]) then {private plan pushBack TACTICS_FLANK; private pos = _enemies select _farHighertarget;};
 
     };
+     // enemy at buildings or fortified
+    private _fortifiedTarget = _enemies findIf { !(_speedMode || GVAR(disableAIAutonomousManoeuvres)) && {nearestObjects [_x, ["Strategic", "StaticWeapon"], 2, true] isNotEqualTo []} };
+    if (_fortifiedTarget != -1) exitWith {
+
+        // basic plan
+        _plan append [TACTICS_FLANK, TACTICS_FLANK, TACTICS_SUPPRESS];
+        _pos = getPosATL (_enemies select _fortifiedTarget);
+
+        // combatmode
+        private _combatMode = combatMode _unit;
+        if (_combatMode isEqualTo "RED") then {_plan pushBack TACTICS_ASSAULT;};
+        if (_combatMode isEqualTo "YELLOW") then {_plan pushBack TACTICS_SUPPRESS;};
+
+    };
 };
 
 // find units
