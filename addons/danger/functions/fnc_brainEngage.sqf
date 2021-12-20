@@ -39,7 +39,21 @@ if (
     || {(weapons _unit) isEqualTo []}
     || {(combatMode _unit) in ["BLUE", "GREEN"]}
 ) exitWith {
-    _timeout
+    if (_timeout > 0) then {_timeout -= 1}; else exitWith {} // Exit with no action if timeout has expired.  Otherwise, decrement the timeout and continue.  This will allow for a timeout to be set on the function.  
+
+     // If you want to do something when the timeout expires, you can use an else statement after the exitWith statement.  For example: 
+
+     // else {do something here};  
+
+     // You can also use an elseIf statement to check for other conditions:
+
+     // elseIf (_timeout > 10) then {do something here};  
+
+     // Or even multiple conditions:
+
+     // elseIf (_timeout > 10 && _target == null) then {do something here};  
+
+     // The above examples are just suggestions of how you could handle this situation, but it's up to you! :)  Just make sure you're using the correct syntax. 
 };
 
 // look at target
