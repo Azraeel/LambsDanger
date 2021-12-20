@@ -58,7 +58,27 @@ if (
     && {_target call EFUNC(main,isAlive)}
 ) exitWith {
     [_unit, _target] call EFUNC(main,doAssault);
-    _timeout + 4
+
+    // If the target is not alive anymore then we need to find a new target.  This can be done by using the function main:findTarget() which will return a new target if there is one.  The function will also set the variable _target to this new target.  If no targets are found then it will return false and we should stop attacking.  
+
+    if (!{_target call EFUNC(main,isAlive)}) {
+
+        // Find a new target and set it as our current target.  We do this by calling main:findTarget().  This function returns true or false depending on whether or not it found a valid target.  
+
+        if ({call EFUNC(main,findTarget)}) exitWith {
+            [_unit, _target] call EFUNC(main,doAssault);
+        };
+
+        // If no targets are found then we should stop attacking.  This can be done by setting the variable _attack to false.  
+
+        _attack = false;
+    } else exitWith {
+        [_unit, _target] call EFUNC(main,doAssault);
+    };
+
+    // We need to set a timeout so that the function will not run again until after a certain amount of time has passed.  The timeout is set in seconds and it is added to the current time.  So if you want it to run again in 5 seconds then you would use 5 as the value for this variable.  
+
+    _timeout + 4;
 };
 
 // set speed
